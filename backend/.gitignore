@@ -1,0 +1,12 @@
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Env files (secrets)
+.env
+
+# Local DB
+*.log
+.DS_Store
+Thumbs.db
