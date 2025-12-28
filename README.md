@@ -1,106 +1,149 @@
-Spur AI Live Chat Agent - Take-Home Assignment
-This is a complete implementation of the AI support agent for a live chat widget using the MERN stack (MongoDB, Express, React, Node.js). The backend uses Node.js + Express, MongoDB (via Mongoose) for persistence, and Groq AI for LLM integration (free tier). The frontend is built with Vite + React for fast development and modern features.
+Markdown# Spur AI Live Chat Agent - Take-Home Assignment
 
-Key features:
+This is a complete implementation of the AI support agent for a live chat widget using the MERN stack (MongoDB, Express, React, Node.js).  
+Backend: Node.js + Express  
+Frontend: Vite + React  
+Database: MongoDB Atlas (cloud)  
+LLM: Groq AI (free tier – fast and cost-free inference)
 
-Real-time chat with AI replies.
-Conversation history persistence.
-Contextual responses using LLM with hardcoded FAQs.
-Error handling and graceful fallbacks.
-Session ID for reloading chats.
-Prerequisites
-Node.js v18+ (download from nodejs.org)
-Git (for cloning)
-MongoDB Atlas account (free tier recommended)
-Groq API key (free from console.groq.com – no credit card needed)
-How to Run Locally (Step by Step)
-1. Clone the Repository
-Bash
+### Live Demo
+**Deployed Frontend:**  
+https://spur-ai-chat-agent-1.onrender.com/
+
+(Backend is running behind it on Render. First load may take 30–60 seconds due to free tier hibernation.)
+
+## Features
+- Real-time AI-powered chat support
+- Conversation history persistence (reload page → chat continues)
+- Contextual multi-turn replies
+- Hindi + English support
+- Graceful error handling
+- Session management via localStorage + MongoDB
+
+## Prerequisites
+- Node.js v18+
+- Git
+- MongoDB Atlas free account
+- Groq API key (free: https://console.groq.com)
+
+## How to Run Locally (Step by Step)
+
+### 1. Clone the Repository
+```bash
 git clone https://github.com/YOUR-USERNAME/spur-ai-chat-agent.git
 cd spur-ai-chat-agent
-2. Set Up the Database (MongoDB Atlas - Recommended for Zero Local Setup)
-Sign up for free at https://www.mongodb.com/cloud/atlas.
-Create a new project and cluster (M0 free tier).
-Add a database user (username/password).
-Allow access from anywhere (IP: 0.0.0.0/0 for testing).
-Get the connection string from "Connect" button:
-Example: mongodb+srv://<username>:<password>@cluster0.abcde.mongodb.net/spur-chat?retryWrites=true&w=majority
-No migrations or seeding needed – Mongoose creates collections automatically on first run. The app persists conversations and messages on-the-fly.
-Alternative (Local MongoDB):
+2. Database Setup (MongoDB Atlas – Recommended)
 
-Install MongoDB locally (mongodb.com/docs/manual/installation).
-Run: mongod (default port 27017).
-Use URI: mongodb://localhost:27017/spur-chat.
-3. Configure Environment Variables
-Create .env in backend/ folder (use .env.example as template if available):
+Create free account at https://www.mongodb.com/cloud/atlas
+New cluster (M0 free tier)
+Create database user
+Allow access from anywhere (IP: 0.0.0.0/0)
+Copy connection string:textmongodb+srv://<username>:<password>@cluster0.xxx.mongodb.net/spur-chat?retryWrites=true&w=majority→ No migrations or seeding required – collections created automatically
 
-text
-PORT=5000
-MONGO_URI=mongodb+srv://<username>:<password>@cluster0.abcde.mongodb.net/spur-chat?retryWrites=true&w=majority  # From Atlas
-GROQ_API_KEY=gsk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  # From Groq console
-For frontend (optional in frontend-vite/.env):
-
-text
-VITE_API_URL=http://localhost:5000
-Important: Never commit .env to Git – add to .gitignore.
-
+3. Environment Variables
+Create .env file in backend/ folder:
+envPORT=5000
+MONGO_URI=mongodb+srv://<username>:<password>@cluster0.xxx.mongodb.net/spur-chat?retryWrites=true&w=majority
+GROQ_API_KEY=gsk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+(Optional) In frontend-vite/.env:
+envVITE_API_URL=http://localhost:5000
 4. Install Dependencies
 Backend:
-Bash
-cd backend
+Bashcd backend
 npm install
 Frontend:
-Bash
-cd ../frontend-vite
+Bashcd ../frontend
 npm install
 5. Run the Application
-Start backend (separate terminal):
-Bash
-cd backend
-npm run dev  # Uses nodemon for auto-reload
-Output: "MongoDB connected successfully" and "Server running on port 5000".
-Start frontend (another terminal):
-Bash
-cd frontend-vite
+Backend (separate terminal):
+Bashcd backend
 npm run dev
-Opens http://localhost:5173 (Vite default port).
-6. Test the App
-Open http://localhost:5173 in browser.
-Type messages like "What's your return policy?" or "Shipping kab tak hoti hai?".
-See AI replies in real-time.
-Refresh page – chat history loads via sessionId from localStorage.
-Check MongoDB Atlas dashboard – collections (conversations, messages) auto-created with data.
-Troubleshooting:
+Frontend (another terminal):
+Bashcd frontend
+npm run dev
+Open → http://localhost:5173
+Project Structure
+textspur-ai-chat-agent/
+├── backend/                    # Node.js + Express API
+│   ├── server.js
+│   ├── routes/
+│   ├── controllers/
+│   ├── models/
+│   ├── services/
+│   ├── .env.example
+│   └── package.json
+├── frontend/              # Vite + React chat UI
+│   ├── src/
+│   │   ├── App.jsx
+│   │   ├── App.css
+│   │   └── main.jsx
+│   ├── vite.config.js
+│   └── package.json
+├── README.md
+└── .gitignore
+Architecture Overview
+Backend
 
-Connection refused? Ensure backend is running and ports match.
-LLM error? Verify GROQ_API_KEY in .env.
-DB connection fail? Check Atlas IP whitelist (0.0.0.0/0) and URI password.
-Short Architecture Overview
-Backend Structure
-server.js: Express app setup, middleware (CORS, JSON parser), MongoDB connection, error handler.
-routes/chatRoutes.js: API endpoints – POST /api/chat/message (send + generate reply), GET /api/chat/history/:sessionId (fetch messages).
-controllers/chatController.js: Core logic – session creation/validation, message saving, history fetch, LLM integration call.
-models/: Mongoose schemas – Conversation (id, timestamps), Message (conversationId, sender, content, timestamps).
-services/llmService.js: Isolated LLM logic – prompt building, Groq API call, error handling.
-Layers: Routes → Controllers → Services/Models – clean separation for maintainability.
-Interesting Design Decisions
-SessionId as MongoDB _id: Simple, scalable, no UUID lib needed.
-History limit (10 messages): Keeps LLM context efficient/cost-effective.
-Optimistic UI in frontend: User message shows instantly, enhances perceived speed.
-Groq over OpenAI: Free, fast inference – fallback-friendly errors.
-No auth: Per spec – focuses on core chat flow.
-LLM Notes
-Provider: Groq AI (free tier with Llama-3.1-70B or similar models) – API-compatible with OpenAI, blazing fast, no quota issues for testing.
-Prompting:
-System Prompt: Role as e-commerce agent + hardcoded FAQs (shipping: free >₹999 India, returns: 15 days unused, etc.). Ensures policy adherence.
-History Inclusion: Last 10 messages as context for conversational flow.
-Parameters: Temperature 0.7 (balanced creativity), max_tokens 500 (concise replies).
-Language Handling: Detects Hindi/English from user input.
-Guardrails: Catches API errors, returns friendly fallback message.
-Trade-offs & “If I Had More Time…”
+server.js: Express setup, CORS, MongoDB connection, global error handling
+routes/ → API endpoints
+controllers/ → Business logic (session, message handling, LLM call)
+models/ → Mongoose schemas
+services/ → Isolated LLM integration (easy to swap provider)
+
+Frontend
+
+Vite + React
+LocalStorage for session persistence
+Optimistic UI updates
+Auto-scroll + loading indicator
+
+LLM Integration
+
+Provider: Groq AI (free tier)
+Model: llama-3.1-70b-versatile (or similar)
+System Prompt: Role as e-commerce support agent + hardcoded store policies (shipping, returns, etc.)
+Context: Last 10 messages included
+Guardrails: Error fallback message, temperature 0.7, max_tokens 500
+
+Deployment on Render.com
+
+Backend: Deployed as Node Web Service
+Root directory: /backend
+Build: npm install
+Start: npm run start
+Env vars: MONGO_URI, GROQ_API_KEY
+Frontend: Deployed as Static Site
+Root directory: /frontend
+Build: npm install && npm run build
+Publish dir: dist
+Env var: VITE_API_URL=https://your-backend.onrender.com
+
+Trade-offs & Future Improvements
 Trade-offs
-Groq (free) vs OpenAI: Faster/cheaper but potentially less nuanced on edge cases.
-MongoDB (NoSQL): Flexible for chats but lacks strict schemas (vs PostgreSQL).
-Vite/React: Quick setup/fast HMR but no SSR (not needed here).
-No Redis: Added DB reads but minimal for demo scale.
-Basic Validation: Trims messages but no deep sanitization – prioritizes speed.
+
+Groq (free/fast) instead of OpenAI → lower cost, but slightly different response style
+No Redis caching → simple, but more DB reads
+Minimal validation → focused on core functionality
+
+If more time
+
+Socket.io for live typing indicators
+Authentication
+Vector store for dynamic knowledge base
+Dark mode + better mobile UX
+Automated tests (Jest/Playwright)
+Multi-LLM fallback system
+
+
+Created for Spur Founding Full-Stack Engineer take-home assignment
+December 2025
+text**Important:**  
+Replace `YOUR-USERNAME` with your actual GitHub username in the clone command.  
+If your actual deployed frontend URL is different from `https://spur-ai-chat-agent-1.onrender.com/`, update it in the README.
+
+Copy-paste this entire content into your `README.md` file at the root of the repository, commit & push:
+
+```bash
+git add README.md
+git commit -m "Update README with deployed URL and final instructions"
+git push origin main
